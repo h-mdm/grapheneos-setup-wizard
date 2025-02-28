@@ -56,4 +56,9 @@
     <string name="oem_unlock_ack_risks">I understand the security risks of not locking my bootloader.</string>
     <string name="disable_oem_unlocking">Disable OEM unlocking</string>
     <string name="disable_oem_unlocking_desc">It\'s recommended to disable OEM unlocking to improve device security</string>
+    <plurals name="qr_provision_toast">
+        <item quantity="one">%1$s more tap to start QR code setup</item>
+        <item quantity="other">%1$s more taps to start QR code setup</item>
+    </plurals>
+    <string name="qr_provisioning_cancelled">QR provisioning cancelled</string>
 </resources>

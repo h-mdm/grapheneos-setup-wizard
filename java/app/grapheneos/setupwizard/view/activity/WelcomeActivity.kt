@@ -3,6 +3,7 @@ package app.grapheneos.setupwizard.view.activity
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
+import android.view.MotionEvent
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -16,6 +17,7 @@ import app.grapheneos.setupwizard.R
 import app.grapheneos.setupwizard.action.FinishActions
 import app.grapheneos.setupwizard.action.SetupWizard
 import app.grapheneos.setupwizard.action.WelcomeActions
+import app.grapheneos.setupwizard.android.ConsecutiveTapsGestureDetector
 import app.grapheneos.setupwizard.data.WelcomeData
 import app.grapheneos.setupwizard.utils.DebugFlags
 
@@ -29,6 +31,7 @@ class WelcomeActivity : SetupWizardActivity(R.layout.activity_welcome) {
     private lateinit var language: TextView
     private lateinit var accessibility: View
     private lateinit var letsSetupText: TextView
+    private var consecutiveTapsGestureDetector: ConsecutiveTapsGestureDetector? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (WizardManagerHelper.isUserSetupComplete(this)
@@ -37,6 +40,10 @@ class WelcomeActivity : SetupWizardActivity(R.layout.activity_welcome) {
             FinishActions.finish(this)
             return
         }
+        consecutiveTapsGestureDetector = ConsecutiveTapsGestureDetector(
+            this.onConsecutiveTapsListener,
+            findViewById<View>(R.id.glif_layout)
+        )
         WelcomeActions.handleEntry(this)
         super.onCreate(savedInstanceState)
     }
@@ -73,4 +80,21 @@ class WelcomeActivity : SetupWizardActivity(R.layout.activity_welcome) {
         }
         primaryButton.setOnClickListener { WelcomeActions.next(this) }
     }
+
+    override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
+        val isTouchEventHandled = super.dispatchTouchEvent(ev)
+        if (isTouchEventHandled) {
+            this.consecutiveTapsGestureDetector?.resetCounter()
+        } else {
+            this.consecutiveTapsGestureDetector?.onTouchEvent(ev)
+        }
+        return isTouchEventHandled
+    }
+
+    private val onConsecutiveTapsListener: ConsecutiveTapsGestureDetector.OnConsecutiveTapsListener =
+        object : ConsecutiveTapsGestureDetector.OnConsecutiveTapsListener {
+            override fun onConsecutiveTaps(welcomeTapCounter: Int) {
+                WelcomeActions.handleConsecutiveTap(welcomeTapCounter, this@WelcomeActivity)
+            }
+        }
 }

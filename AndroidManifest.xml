@@ -15,12 +15,17 @@
     <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="com.stevesoltys.seedvault.RESTORE_BACKUP" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.MASTER_CLEAR"/>
 
     <application
         android:name=".App"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.SetupWizard"
+        android:hardwareAccelerated="true"
         tools:ignore="MissingApplicationIcon">
 
         <activity
@@ -42,6 +47,11 @@
         <activity android:name=".view.activity.MigrationActivity" />
         <activity android:name=".view.activity.GesturesActivity" />
         <activity android:name=".view.activity.FinishActivity" />
+        <activity
+            android:name="com.journeyapps.barcodescanner.CaptureActivity"
+            android:screenOrientation="portrait"
+            tools:replace="screenOrientation"
+            android:exported="false"/>
     </application>
 
 </manifest>
