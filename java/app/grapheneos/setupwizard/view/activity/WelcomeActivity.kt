@@ -40,10 +40,6 @@ class WelcomeActivity : SetupWizardActivity(R.layout.activity_welcome) {
             FinishActions.finish(this)
             return
         }
-        consecutiveTapsGestureDetector = ConsecutiveTapsGestureDetector(
-            this.onConsecutiveTapsListener,
-            findViewById<View>(R.id.glif_layout)
-        )
         WelcomeActions.handleEntry(this)
         super.onCreate(savedInstanceState)
     }
@@ -67,6 +63,10 @@ class WelcomeActivity : SetupWizardActivity(R.layout.activity_welcome) {
             Log.d(TAG, "oemUnlocked: $it")
             oemUnlockedContainer.visibility = if (it) View.VISIBLE else View.GONE
         }
+        consecutiveTapsGestureDetector = ConsecutiveTapsGestureDetector(
+            this.onConsecutiveTapsListener,
+            requireViewById(R.id.root_layout)
+        )
     }
 
     @MainThread
