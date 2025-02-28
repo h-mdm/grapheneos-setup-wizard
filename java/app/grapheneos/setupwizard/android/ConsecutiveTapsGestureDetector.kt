@@ -24,7 +24,7 @@ class ConsecutiveTapsGestureDetector(
     }
 
     fun onTouchEvent(ev: MotionEvent) {
-        if (ev.action != 1) {
+        if (ev.action != MotionEvent.ACTION_UP) {
             return
         }
         val viewRect = Rect()

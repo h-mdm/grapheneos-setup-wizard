@@ -16,6 +16,7 @@ android_app {
         "setupcompat",
         "setupdesign",
         "setupwizard2-zxing-android",
+        "setupwizard2-zxing-core",
     ],
 
     required: ["privapp_whitelist_app.grapheneos.setupwizard"],

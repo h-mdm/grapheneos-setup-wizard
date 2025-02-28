@@ -4,3 +4,10 @@ android_library_import {
     sdk_version: "current",
 }
 
+java_import {
+    name: "setupwizard2-zxing-core",
+    jars: ["zxing-core-3.4.1.jar"],
+    sdk_version: "current",
+
+}
+

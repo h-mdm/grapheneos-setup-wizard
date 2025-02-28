@@ -44,6 +44,11 @@ class WelcomeActivity : SetupWizardActivity(R.layout.activity_welcome) {
         super.onCreate(savedInstanceState)
     }
 
+    override fun onResume() {
+        super.onResume()
+	consecutiveTapsGestureDetector?.resetCounter()
+    }
+
     @MainThread
     override fun bindViews() {
         oemUnlockedContainer = requireViewById(R.id.oem_unlocked_container)
@@ -83,9 +88,7 @@ class WelcomeActivity : SetupWizardActivity(R.layout.activity_welcome) {
 
     override fun dispatchTouchEvent(ev: MotionEvent): Boolean {
         val isTouchEventHandled = super.dispatchTouchEvent(ev)
-        if (isTouchEventHandled) {
-            this.consecutiveTapsGestureDetector?.resetCounter()
-        } else {
+        if (ev.action == MotionEvent.ACTION_UP) {
             this.consecutiveTapsGestureDetector?.onTouchEvent(ev)
         }
         return isTouchEventHandled
