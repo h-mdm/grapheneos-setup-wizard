@@ -1,0 +1,6 @@
+android_library_import {
+    name: "setupwizard2-zxing-android",
+    aars: ["zxing-android-embedded-4.3.0.aar"],
+    sdk_version: "current",
+}
+
