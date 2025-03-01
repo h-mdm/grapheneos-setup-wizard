@@ -19,6 +19,7 @@ import app.grapheneos.setupwizard.appContext
 import app.grapheneos.setupwizard.data.WelcomeData
 import app.grapheneos.setupwizard.utils.DebugFlags
 import app.grapheneos.setupwizard.view.activity.OemUnlockActivity
+import app.grapheneos.setupwizard.view.activity.ProvisioningActivity
 import com.android.internal.app.LocalePicker
 import com.android.internal.app.LocalePicker.LocaleInfo
 import com.google.android.setupcompat.util.SystemBarHelper
@@ -194,13 +195,8 @@ object WelcomeActions {
     }
 
     fun launchQrProvisioning(activity: AppCompatActivity, contents: String) {
-        // TODO
-        Toast.makeText(
-            activity,
-            "Scanned: " + contents,
-            Toast.LENGTH_LONG
-        )
-            .show()
-
+        val intent = Intent(activity, ProvisioningActivity::class.java)
+        intent.putExtra(ProvisioningActions.EXTRA_QR_CONTENTS, contents)
+        SetupWizard.startActivity(activity, intent)
     }
 }

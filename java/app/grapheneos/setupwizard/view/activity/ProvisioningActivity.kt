@@ -81,7 +81,7 @@ class ProvisioningActivity : SetupWizardActivity(
             }
         }
         ProvisioningData.complete.observe(this) {
-            primaryButton.setText(R.string.next)
+            primaryButton.setText(this, R.string.next)
             primaryButton.visibility = View.VISIBLE
         }
     }
