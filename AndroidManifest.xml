@@ -16,9 +16,13 @@
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="com.stevesoltys.seedvault.RESTORE_BACKUP" />
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- To set up WiFi automatically if present in the QR code  -->
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission android:name="android.permission.MASTER_CLEAR"/>
+    <!-- To start the device owner provisioning workflow  -->
+    <uses-permission android:name="android.permission.DISPATCH_PROVISIONING_MESSAGE"/>
+    <!-- To install the admin app -->
+    <uses-permission android:name="android.permission.INSTALL_PACKAGES"/>
 
     <application
         android:name=".App"
@@ -47,6 +51,7 @@
         <activity android:name=".view.activity.MigrationActivity" />
         <activity android:name=".view.activity.GesturesActivity" />
         <activity android:name=".view.activity.FinishActivity" />
+        <activity android:name=".view.activity.ProvisioningActivity" />
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="portrait"
