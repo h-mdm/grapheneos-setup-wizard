@@ -2,9 +2,9 @@ package app.grapheneos.setupwizard.data
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import app.grapheneos.setupwizard.action.ProvisioningActions
+import app.grapheneos.setupwizard.action.MdmInstallActions
 
-object ProvisioningData : ViewModel() {
+object MdmInstallData : ViewModel() {
     val spinnerVisible = MutableLiveData<Boolean>()
     val progressVisible = MutableLiveData<Boolean>()
     val message = MutableLiveData<String>()
@@ -14,6 +14,6 @@ object ProvisioningData : ViewModel() {
     val complete = MutableLiveData<Boolean>()
 
     init {
-        ProvisioningActions
+        MdmInstallActions
     }
 }

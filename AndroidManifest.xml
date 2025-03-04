@@ -51,7 +51,8 @@
         <activity android:name=".view.activity.MigrationActivity" />
         <activity android:name=".view.activity.GesturesActivity" />
         <activity android:name=".view.activity.FinishActivity" />
-        <activity android:name=".view.activity.ProvisioningActivity" />
+        <activity android:name=".view.activity.MdmInstallActivity" />
+        <activity android:name=".view.activity.ProvisionActivity" />
         <activity
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
             android:screenOrientation="portrait"

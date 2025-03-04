@@ -2,8 +2,6 @@ package app.grapheneos.setupwizard.action
 
 import android.app.Activity
 import android.app.admin.DevicePolicyManager
-import android.app.admin.DevicePolicyManager.ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE
-import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_TRIGGER
 import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE
 import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME
 import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM
@@ -20,7 +18,8 @@ import android.util.Base64
 import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import app.grapheneos.setupwizard.R
-import app.grapheneos.setupwizard.data.ProvisioningData
+import app.grapheneos.setupwizard.data.MdmInstallData
+import app.grapheneos.setupwizard.view.activity.ProvisionActivity
 import app.grapheneos.setupwizard.view.activity.SetupWizardActivity
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -33,21 +32,9 @@ import java.security.MessageDigest
 import java.util.concurrent.Executors
 
 
-object ProvisioningActions {
-    private const val TAG = "WelcomeActions"
+object MdmInstallActions {
+    private const val TAG = "MdmInstallActions"
     const val EXTRA_QR_CONTENTS = "EXTRA_QR_CONTENTS"
-
-    private const val PROVISIONING_TRIGGER_QR_CODE = 2
-
-    // Copied from ManagedProvisioning app, as they're hidden;
-    private const val PROVISION_FINALIZATION_INSIDE_SUW =
-        "android.app.action.PROVISION_FINALIZATION_INSIDE_SUW"
-    private const val RESULT_CODE_PROFILE_OWNER_SET = 122
-    private const val RESULT_CODE_DEVICE_OWNER_SET = 123
-
-    private const val REQUEST_CODE_STEP1 = 42
-    private const val REQUEST_CODE_STEP2_PO = 43
-    private const val REQUEST_CODE_STEP2_DO = 44
 
     private const val EXTRA_ADMIN_COMPONENT_NAME = "android.app.extra.PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME"
     private const val EXTRA_DOWNLOAD_LOCATION = "android.app.extra.PROVISIONING_DEVICE_ADMIN_PACKAGE_DOWNLOAD_LOCATION"
@@ -77,7 +64,7 @@ object ProvisioningActions {
     fun handleEntry(context: Activity) {
         val qrContent = context.intent.getStringExtra(EXTRA_QR_CONTENTS)
         if (qrContent == null) {
-            ProvisioningData.error.postValue(context.getString(R.string.qr_parse_failed))
+            MdmInstallData.error.postValue(context.getString(R.string.qr_parse_failed))
         }
         if (!parseProvisioningQr(context, qrContent!!)) {
             return
@@ -107,28 +94,28 @@ object ProvisioningActions {
         try {
             jsonNode = objectMapper.readTree(qrContent)
         } catch(e: Exception) {
-            ProvisioningData.error.postValue(context.getString(R.string.qr_parse_failed))
+            MdmInstallData.error.postValue(context.getString(R.string.qr_parse_failed))
             return false
         }
 
         if (jsonNode.has(EXTRA_ADMIN_COMPONENT_NAME) && jsonNode[EXTRA_ADMIN_COMPONENT_NAME].isTextual) {
             adminComponentName = jsonNode[EXTRA_ADMIN_COMPONENT_NAME].asText()
         } else {
-            ProvisioningData.error.postValue(context.getString(R.string.qr_missing_parameter) + EXTRA_ADMIN_COMPONENT_NAME)
+            MdmInstallData.error.postValue(context.getString(R.string.qr_missing_parameter) + EXTRA_ADMIN_COMPONENT_NAME)
             return false
         }
 
         if (jsonNode.has(EXTRA_DOWNLOAD_LOCATION) && jsonNode[EXTRA_DOWNLOAD_LOCATION].isTextual) {
             downloadLocation = jsonNode[EXTRA_DOWNLOAD_LOCATION].asText()
         } else {
-            ProvisioningData.error.postValue(context.getString(R.string.qr_missing_parameter) + EXTRA_DOWNLOAD_LOCATION)
+            MdmInstallData.error.postValue(context.getString(R.string.qr_missing_parameter) + EXTRA_DOWNLOAD_LOCATION)
             return false
         }
 
         if (jsonNode.has(EXTRA_PACKAGE_CHECKSUM) && jsonNode[EXTRA_PACKAGE_CHECKSUM].isTextual) {
             packageChecksum = jsonNode[EXTRA_PACKAGE_CHECKSUM].asText()
         } else {
-            ProvisioningData.error.postValue(context.getString(R.string.qr_missing_parameter) + EXTRA_PACKAGE_CHECKSUM)
+            MdmInstallData.error.postValue(context.getString(R.string.qr_missing_parameter) + EXTRA_PACKAGE_CHECKSUM)
             return false
         }
 
@@ -181,12 +168,12 @@ object ProvisioningActions {
     }
 
     private fun downloadAdminApp(context: Activity) {
-        ProvisioningData.message.postValue(context.getString(R.string.downloading_admin_app))
+        MdmInstallData.message.postValue(context.getString(R.string.downloading_admin_app))
         executor.execute {
             if (downloadAdminAppSync(context)) {
-                ProvisioningData.progressVisible.postValue(false)
+                MdmInstallData.progressVisible.postValue(false)
                 if (!calculatedPackageChecksum.equals(packageChecksum, ignoreCase = true)) {
-                    ProvisioningData.error.postValue(context.getString(R.string.checksum_failed))
+                    MdmInstallData.error.postValue(context.getString(R.string.checksum_failed))
                     return@execute
                 }
                 installAdminApp(context)
@@ -204,7 +191,7 @@ object ProvisioningActions {
                 tempFile.createNewFile()
             } catch (e: Exception) {
                 e.printStackTrace()
-                ProvisioningData.error.postValue("Failed to create " + tempFile.absolutePath)
+                MdmInstallData.error.postValue("Failed to create " + tempFile.absolutePath)
                 return false
             }
             val url = URL(downloadLocation)
@@ -237,7 +224,7 @@ object ProvisioningActions {
             calculatedPackageChecksum = Base64.encodeToString(digest.digest(), Base64.NO_WRAP or Base64.URL_SAFE)
         } catch (e: java.lang.Exception) {
             tempFile.delete()
-            ProvisioningData.error.postValue(context.getString(R.string.download_failed) + e.message)
+            MdmInstallData.error.postValue(context.getString(R.string.download_failed) + e.message)
             return false
         }
         return true
@@ -246,11 +233,11 @@ object ProvisioningActions {
     private fun notifyDownloadStart(total: Int) {
         if (total == -1) {
             // We don't know the content length
-            ProvisioningData.spinnerVisible.postValue(true)
-            ProvisioningData.progressVisible.postValue(false)
+            MdmInstallData.spinnerVisible.postValue(true)
+            MdmInstallData.progressVisible.postValue(false)
         } else {
-            ProvisioningData.spinnerVisible.postValue(false)
-            ProvisioningData.progressVisible.postValue(true)
+            MdmInstallData.spinnerVisible.postValue(false)
+            MdmInstallData.progressVisible.postValue(true)
         }
     }
 
@@ -259,8 +246,8 @@ object ProvisioningActions {
             val downloadedMb: Float = downloaded / 1048576.0f
             val totalMb: Float = total / 1048576.0f
             val progress = context.getString(R.string.download_progress, downloadedMb, totalMb)
-            ProvisioningData.downloadProgressLegend.postValue(progress)
-            ProvisioningData.downloadProgress.postValue((downloadedMb * 100 / totalMb).toInt())
+            MdmInstallData.downloadProgressLegend.postValue(progress)
+            MdmInstallData.downloadProgress.postValue((downloadedMb * 100 / totalMb).toInt())
         }
     }
 
@@ -269,9 +256,9 @@ object ProvisioningActions {
             val status = intent!!.getIntExtra(PackageInstaller.EXTRA_STATUS, 0)
             when (status) {
                 PackageInstaller.STATUS_SUCCESS -> {
-                    ProvisioningData.spinnerVisible.postValue(false)
-                    ProvisioningData.message.postValue(context?.getString(R.string.install_successful))
-                    ProvisioningData.complete.postValue(true)
+                    MdmInstallData.spinnerVisible.postValue(false)
+                    MdmInstallData.message.postValue(context?.getString(R.string.install_successful))
+                    MdmInstallData.complete.postValue(true)
                 }
                 else -> {
                     // Installation failure
@@ -281,14 +268,14 @@ object ProvisioningActions {
                     if (extraMessage != null && extraMessage.length > 0) {
                         errorText += ", extra: $extraMessage"
                     }
-                    ProvisioningData.error.postValue(errorText)
+                    MdmInstallData.error.postValue(errorText)
                 }
             }
         }
     }
 
     private fun installAdminApp(context: Activity) {
-        ProvisioningData.message.postValue(context.getString(R.string.installing_admin_app))
+        MdmInstallData.message.postValue(context.getString(R.string.installing_admin_app))
         context.registerReceiver(
             appInstallReceiver,
             IntentFilter(AppInstaller.ACTION_INSTALL_COMPLETE),
@@ -298,7 +285,7 @@ object ProvisioningActions {
             val error = AppInstaller.silentInstallApplication(context, File(context.filesDir, ADMIN_APK_FILE_NAME))
             if (error != null) {
                 context.unregisterReceiver(appInstallReceiver)
-                ProvisioningData.error.postValue(context.getString(R.string.install_failed) + error)
+                MdmInstallData.error.postValue(context.getString(R.string.install_failed) + error)
             }
             // Install completion is caught in the BroadcastReceiver
         }
@@ -310,6 +297,7 @@ object ProvisioningActions {
         } catch (e: Exception) {
             e.printStackTrace()
         }
+
         if (!context.getPackageManager().hasSystemFeature(PackageManager.FEATURE_DEVICE_ADMIN)) {
             handleError(context, "Cannot set up device owner because device does not have the "
                     + PackageManager.FEATURE_DEVICE_ADMIN + " feature")
@@ -325,8 +313,7 @@ object ProvisioningActions {
             return
         }
 
-        val intent = Intent(ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE)
-        intent.putExtra(EXTRA_PROVISIONING_TRIGGER, PROVISIONING_TRIGGER_QR_CODE)
+        val intent = Intent(context, ProvisionActivity::class.java)
         intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME, adminComponentName)
         intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM, packageChecksum)
         if (systemAppsEnabled) {
@@ -338,14 +325,7 @@ object ProvisioningActions {
         if (extrasBundle != null) {
             intent.putExtra(EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE, extrasBundle)
         }
-        context.startActivityForResult(intent, REQUEST_CODE_STEP1)
-    }
-
-    private fun setProvisioningState(context: Activity) {
-        Log.i(TAG, "Setting provisioning state")
-        // Add a persistent setting to allow other apps to know the device has been provisioned.
-        //Settings.Global.putInt(context.getContentResolver(), Settings.Global.DEVICE_PROVISIONED, 1)
-        //Settings.Secure.putInt(context.getContentResolver(), Settings.Secure.USER_SETUP_COMPLETE, 1)
+        context.startActivity(intent)
     }
 
     private fun jsonToPersistableBundle(jsonNode: JsonNode): PersistableBundle {

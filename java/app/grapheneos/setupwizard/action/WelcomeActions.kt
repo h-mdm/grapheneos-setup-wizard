@@ -2,7 +2,6 @@ package app.grapheneos.setupwizard.action
 
 import android.app.Activity
 import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Build
 import android.os.PowerManager
@@ -19,7 +18,7 @@ import app.grapheneos.setupwizard.appContext
 import app.grapheneos.setupwizard.data.WelcomeData
 import app.grapheneos.setupwizard.utils.DebugFlags
 import app.grapheneos.setupwizard.view.activity.OemUnlockActivity
-import app.grapheneos.setupwizard.view.activity.ProvisioningActivity
+import app.grapheneos.setupwizard.view.activity.MdmInstallActivity
 import com.android.internal.app.LocalePicker
 import com.android.internal.app.LocalePicker.LocaleInfo
 import com.google.android.setupcompat.util.SystemBarHelper
@@ -195,8 +194,8 @@ object WelcomeActions {
     }
 
     fun launchQrProvisioning(activity: AppCompatActivity, contents: String) {
-        val intent = Intent(activity, ProvisioningActivity::class.java)
-        intent.putExtra(ProvisioningActions.EXTRA_QR_CONTENTS, contents)
+        val intent = Intent(activity, MdmInstallActivity::class.java)
+        intent.putExtra(MdmInstallActions.EXTRA_QR_CONTENTS, contents)
         SetupWizard.startActivity(activity, intent)
     }
 }

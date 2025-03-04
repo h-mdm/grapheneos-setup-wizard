@@ -7,15 +7,10 @@ import android.widget.ProgressBar
 import android.widget.TextView
 import app.grapheneos.setupwizard.R
 import app.grapheneos.setupwizard.action.DateTimeActions
-import app.grapheneos.setupwizard.action.FinishActions
-import app.grapheneos.setupwizard.action.ProvisioningActions
-import app.grapheneos.setupwizard.action.SetupWizard
-import app.grapheneos.setupwizard.action.WelcomeActions
-import app.grapheneos.setupwizard.data.DateTimeData
-import app.grapheneos.setupwizard.data.ProvisioningData
-import app.grapheneos.setupwizard.utils.DebugFlags
+import app.grapheneos.setupwizard.action.MdmInstallActions
+import app.grapheneos.setupwizard.data.MdmInstallData
 
-class ProvisioningActivity : SetupWizardActivity(
+class MdmInstallActivity : SetupWizardActivity(
     R.layout.activity_provisioning,
     R.drawable.baseline_provisioning_glif,
     R.string.provisioning_title,
@@ -32,7 +27,7 @@ class ProvisioningActivity : SetupWizardActivity(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        ProvisioningActions.handleEntry(this)
+        MdmInstallActions.handleEntry(this)
     }
 
     override fun onResume() {
@@ -47,7 +42,7 @@ class ProvisioningActivity : SetupWizardActivity(
 
     override fun onActivityResult(resultCode: Int, data: Intent?) {
         super.onActivityResult(resultCode, data)
-        ProvisioningActions.handleActivityResult(this, resultCode, data)
+        MdmInstallActions.handleActivityResult(this, resultCode, data)
     }
 
     override fun bindViews() {
@@ -58,29 +53,29 @@ class ProvisioningActivity : SetupWizardActivity(
         secondaryButton.visibility = View.GONE
         primaryButton.visibility = View.GONE
 
-        ProvisioningData.message.observe(this) {
+        MdmInstallData.message.observe(this) {
             this.message.text = it
         }
-        ProvisioningData.spinnerVisible.observe(this) {
+        MdmInstallData.spinnerVisible.observe(this) {
             this.spinner.visibility = if (it) View.VISIBLE else View.GONE
         }
-        ProvisioningData.progressVisible.observe(this) {
+        MdmInstallData.progressVisible.observe(this) {
             val visibility = if (it) View.VISIBLE else View.GONE
             this.linearProgress.visibility = visibility
             this.progressLegend.visibility = visibility
         }
-        ProvisioningData.downloadProgress.observe(this) {
+        MdmInstallData.downloadProgress.observe(this) {
             this.linearProgress.progress = it
         }
-        ProvisioningData.downloadProgressLegend.observe(this) {
+        MdmInstallData.downloadProgressLegend.observe(this) {
             this.progressLegend.text = it
         }
-        ProvisioningData.error.observe(this) {
+        MdmInstallData.error.observe(this) {
             if (it != null) {
-                ProvisioningActions.handleError(this, it)
+                MdmInstallActions.handleError(this, it)
             }
         }
-        ProvisioningData.complete.observe(this) {
+        MdmInstallData.complete.observe(this) {
             primaryButton.setText(this, R.string.next)
             primaryButton.visibility = View.VISIBLE
         }
@@ -88,7 +83,7 @@ class ProvisioningActivity : SetupWizardActivity(
 
     override fun setupActions() {
         primaryButton.setOnClickListener {
-            ProvisioningActions.provisionDeviceOwner(this)
+            MdmInstallActions.provisionDeviceOwner(this)
         }
     }
 }
