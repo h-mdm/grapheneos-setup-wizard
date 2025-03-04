@@ -14,17 +14,18 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
+import android.net.wifi.WifiConfiguration
 import android.os.PersistableBundle
+import android.text.TextUtils
 import android.util.Base64
-import android.util.Log
 import androidx.appcompat.app.AlertDialog
 import app.grapheneos.setupwizard.R
 import app.grapheneos.setupwizard.data.MdmInstallData
 import app.grapheneos.setupwizard.view.activity.ProvisionActivity
 import app.grapheneos.setupwizard.view.activity.SetupWizardActivity
-import com.google.android.setupcompat.util.SystemBarHelper
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.google.android.setupcompat.util.SystemBarHelper
 import java.io.DataInputStream
 import java.io.File
 import java.io.FileOutputStream
@@ -32,6 +33,8 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
 import java.util.concurrent.Executors
+import android.net.wifi.WifiManager
+import android.util.Log
 
 
 object MdmInstallActions {
@@ -164,8 +167,73 @@ object MdmInstallActions {
     }
 
     private fun setupWiFiAutomatic(context: Activity) {
-        // TODO
-        onWifiSetupComplete(context)
+        MdmInstallData.spinnerVisible.postValue(true)
+        MdmInstallData.message.postValue(context.getString(R.string.setting_up_wifi))
+
+        val wifiManager = context.getSystemService(WifiManager::class.java)
+        if (wifiManager == null) {
+            Log.e(TAG, "Failed to retrieve the WifiManager service")
+            MdmInstallData.error.postValue(context.getString(R.string.wifi_failed))
+            return
+        }
+
+        val wifiConfiguration = WifiConfiguration()
+        wifiConfiguration.SSID = "\"" + wifiSsid + "\"";
+
+        when(wifiSecurityType) {
+            "NONE" -> {
+                wifiConfiguration.setSecurityParams(WifiConfiguration.SECURITY_TYPE_OPEN);
+            }
+            "WPA" -> {
+                wifiConfiguration.setSecurityParams(WifiConfiguration.SECURITY_TYPE_PSK)
+                if (!TextUtils.isEmpty(wifiPassword)) {
+                    if (wifiPassword?.matches("[0-9A-Fa-f]{64}".toRegex()) == true) {
+                        wifiConfiguration.preSharedKey = wifiPassword
+                    } else {
+                        wifiConfiguration.preSharedKey = "\"" + wifiPassword + "\""
+                    }
+                }
+            }
+            "EAP" -> {
+                wifiConfiguration.setSecurityParams(WifiConfiguration.SECURITY_TYPE_EAP);
+                if (!TextUtils.isEmpty(wifiPassword)) {
+                    wifiConfiguration.preSharedKey = "\"" + wifiPassword + "\""
+                }
+            }
+            "WEP" -> {
+                wifiConfiguration.setSecurityParams(WifiConfiguration.SECURITY_TYPE_WEP)
+                if (!TextUtils.isEmpty(wifiPassword)) {
+                    val length: Int = wifiPassword!!.length
+                    // WEP-40, WEP-104, and 256-bit WEP (WEP-232?)
+                    if ((length == 10 || length == 26 || length == 58)
+                        && wifiPassword?.matches("[0-9A-Fa-f]*".toRegex()) == true
+                    ) {
+                        wifiConfiguration.wepKeys[0] = wifiPassword
+                    } else {
+                        wifiConfiguration.wepKeys[0] = "\"" + wifiPassword + "\""
+                    }
+                }
+
+            }
+            else -> {
+                MdmInstallData.error.postValue("Unsupported WiFi security type: " + wifiSecurityType)
+                return
+            }
+        }
+
+        wifiManager.connect(wifiConfiguration, object: WifiManager.ActionListener() {
+            override fun onSuccess() {
+                MdmInstallData.spinnerVisible.postValue(false)
+                onWifiSetupComplete(context)
+            }
+
+            override fun onFailure(reason: Int) {
+                MdmInstallData.spinnerVisible.postValue(false)
+                Log.e(TAG, "Failed to set up WiFi: " + reason)
+                MdmInstallData.error.postValue(context.getString(R.string.wifi_failed))
+                return
+            }
+        })
     }
 
     private fun onWifiSetupComplete(context: Activity) {
