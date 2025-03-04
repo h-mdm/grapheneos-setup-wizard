@@ -22,6 +22,7 @@ import app.grapheneos.setupwizard.R
 import app.grapheneos.setupwizard.data.MdmInstallData
 import app.grapheneos.setupwizard.view.activity.ProvisionActivity
 import app.grapheneos.setupwizard.view.activity.SetupWizardActivity
+import com.google.android.setupcompat.util.SystemBarHelper
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import java.io.DataInputStream
@@ -63,6 +64,7 @@ object MdmInstallActions {
     private var calculatedPackageChecksum: String? = null
 
     fun handleEntry(context: Activity) {
+        SystemBarHelper.setBackButtonVisible(context.window, false)
         val qrContent = context.intent.getStringExtra(EXTRA_QR_CONTENTS)
         if (qrContent == null) {
             MdmInstallData.error.postValue(context.getString(R.string.qr_parse_failed))
@@ -225,6 +227,7 @@ object MdmInstallActions {
             dis.close()
             calculatedPackageChecksum = Base64.encodeToString(digest.digest(), Base64.NO_WRAP or Base64.URL_SAFE)
         } catch (e: java.lang.Exception) {
+            e.printStackTrace()
             tempFile.delete()
             MdmInstallData.error.postValue(context.getString(R.string.download_failed) + e.message)
             return false
@@ -277,6 +280,7 @@ object MdmInstallActions {
     }
 
     private fun installAdminApp(context: Activity) {
+        MdmInstallData.spinnerVisible.postValue(true)
         MdmInstallData.message.postValue(context.getString(R.string.installing_admin_app))
         context.registerReceiver(
             appInstallReceiver,
