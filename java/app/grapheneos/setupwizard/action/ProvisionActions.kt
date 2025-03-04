@@ -13,7 +13,7 @@ import android.os.PersistableBundle
 import android.provider.Settings
 import android.util.Log
 import app.grapheneos.setupwizard.R
-import app.grapheneos.setupwizard.view.activity.WelcomeActivity
+import app.grapheneos.setupwizard.view.activity.FinishActivity
 
 object ProvisionActions {
     private const val TAG = "ProvisionActions"
@@ -58,9 +58,9 @@ object ProvisionActions {
     private fun disableSelfAndFinish(context: Activity) {
         // remove this activity from the package manager.
         val pm: PackageManager = context.getPackageManager()
-        val name = ComponentName(context, WelcomeActivity::class.java)
+        val name = context.packageName
         Log.i(TAG, "Disabling itself ($name)")
-        pm.setComponentEnabledSetting(
+        pm.setApplicationEnabledSetting(
             name, PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
             PackageManager.DONT_KILL_APP
         )
@@ -71,10 +71,10 @@ object ProvisionActions {
     fun handleProvisioningStep1Result(context: Activity, resultCode: Int) {
         val requestCodeStep2: Int
         when (resultCode) {
-            RESULT_CODE_PROFILE_OWNER_SET -> /*requestCodeStep2 = REQUEST_CODE_STEP2_PO */ {
+            RESULT_CODE_PROFILE_OWNER_SET -> requestCodeStep2 = REQUEST_CODE_STEP2_PO /*{
                 factoryReset(context, "profile owner is not supported")
                 return
-            }
+            }*/
             RESULT_CODE_DEVICE_OWNER_SET -> requestCodeStep2 = REQUEST_CODE_STEP2_DO
             else -> {
                 factoryReset(context, "invalid response from the provisioning engine: "
@@ -99,7 +99,9 @@ object ProvisionActions {
             return
         }
         Log.i(TAG, (if (doMode) "Device owner" else "Profile owner") + " mode provisioned!")
-        disableSelfAndFinish(context)
+        //disableSelfAndFinish(context)
+        // Let user know the setup is completed and finalize self properly
+        SetupWizard.startActivity(context, FinishActivity::class.java)
     }
 
     fun resultCodeToString(resultCode: Int): String {

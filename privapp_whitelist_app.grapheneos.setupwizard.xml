@@ -19,5 +19,5 @@
         <permission name="android.permission.WRITE_SECURE_SETTINGS"/>
         <permission name="android.permission.WRITE_SETTINGS"/>
         <permission name="com.stevesoltys.seedvault.RESTORE_BACKUP"/>
-</privapp-permissions>
+    </privapp-permissions>
 </permissions>
