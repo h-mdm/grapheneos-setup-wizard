@@ -85,6 +85,7 @@ object MdmInstallActions {
             .setMessage(message)
             .setPositiveButton(R.string.button_ok) { dialog, _ ->
                 dialog.dismiss()
+                MdmInstallData.error.postValue(null)
                 context.finish()
             }
             .setCancelable(false)
