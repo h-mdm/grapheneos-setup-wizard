@@ -71,7 +71,10 @@ object ProvisionActions {
     fun handleProvisioningStep1Result(context: Activity, resultCode: Int) {
         val requestCodeStep2: Int
         when (resultCode) {
-            RESULT_CODE_PROFILE_OWNER_SET -> requestCodeStep2 = REQUEST_CODE_STEP2_PO
+            RESULT_CODE_PROFILE_OWNER_SET -> /*requestCodeStep2 = REQUEST_CODE_STEP2_PO */ {
+                factoryReset(context, "profile owner is not supported")
+                return
+            }
             RESULT_CODE_DEVICE_OWNER_SET -> requestCodeStep2 = REQUEST_CODE_STEP2_DO
             else -> {
                 factoryReset(context, "invalid response from the provisioning engine: "
@@ -114,7 +117,7 @@ object ProvisionActions {
 
     private fun factoryReset(context: Activity, reason: String) {
         AlertDialog.Builder(context)
-            .setMessage("Device owner provisioning failed (" + reason
+            .setMessage("Device provisioning failed (" + reason
                         + ") and device must be factory reset"
             )
             .setPositiveButton(context.getString(R.string.button_reset)) { _: DialogInterface?, _: Int ->
