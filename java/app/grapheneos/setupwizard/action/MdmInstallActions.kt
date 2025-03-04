@@ -8,6 +8,7 @@ import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_SIG
 import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED
 import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_SKIP_ENCRYPTION
 import android.content.BroadcastReceiver
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
@@ -314,7 +315,14 @@ object MdmInstallActions {
         }
 
         val intent = Intent(context, ProvisionActivity::class.java)
-        intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME, adminComponentName)
+
+        val adminComponentNameParts = adminComponentName.split("/")
+        if (adminComponentNameParts.size != 2) {
+            handleError(context, "Wrong component name format: " + adminComponentName)
+            return
+        }
+        intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME, 
+            ComponentName(adminComponentNameParts[0], adminComponentNameParts[1]))
         intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM, packageChecksum)
         if (systemAppsEnabled) {
             intent.putExtra(EXTRA_PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED, true)

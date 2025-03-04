@@ -6,6 +6,7 @@ import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.content.Intent
 import android.util.Log
+import android.provider.Settings
 
 object ProvisionActions {
     private const val TAG = "ProvisionActions"
@@ -50,8 +51,8 @@ object ProvisionActions {
     private fun setProvisioningState(context: Activity) {
         Log.i(TAG, "Setting provisioning state")
         // Add a persistent setting to allow other apps to know the device has been provisioned.
-        //Settings.Global.putInt(context.getContentResolver(), Settings.Global.DEVICE_PROVISIONED, 1)
-        //Settings.Secure.putInt(context.getContentResolver(), Settings.Secure.USER_SETUP_COMPLETE, 1)
+        Settings.Global.putInt(context.getContentResolver(), Settings.Global.DEVICE_PROVISIONED, 1)
+        Settings.Secure.putInt(context.getContentResolver(), Settings.Secure.USER_SETUP_COMPLETE, 1)
     }
 
 }
