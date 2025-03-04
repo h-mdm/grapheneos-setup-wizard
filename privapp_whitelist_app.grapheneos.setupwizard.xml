@@ -12,6 +12,7 @@
 	<permission name="android.permission.CHANGE_WIFI_STATE"/>
 	<permission name="android.permission.DISPATCH_PROVISIONING_MESSAGE"/>
 	<permission name="android.permission.INSTALL_PACKAGES"/>
+	<permission name="android.permission.MASTER_CLEAR"/>
 	<permission name="android.permission.SET_TIME"/>
         <permission name="android.permission.SET_TIME_ZONE"/>
         <permission name="android.permission.STATUS_BAR"/>

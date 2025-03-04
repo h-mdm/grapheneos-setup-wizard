@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:text="@string/provisioning_powered"
         android:layout_gravity="top"
-        android:layout_marginLeft="32dp"
+        android:layout_marginLeft="24dp"
         />
 
     <LinearLayout

@@ -85,6 +85,7 @@ object MdmInstallActions {
                 dialog.dismiss()
                 context.finish()
             }
+            .setCancelable(false)
             .create()
             .show()
     }
