@@ -316,12 +316,12 @@ object MdmInstallActions {
 
         val intent = Intent(context, ProvisionActivity::class.java)
 
-        val adminComponentNameParts = adminComponentName.split("/")
+        val adminComponentNameParts = adminComponentName!!.split("/")
         if (adminComponentNameParts.size != 2) {
             handleError(context, "Wrong component name format: " + adminComponentName)
             return
         }
-        intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME, 
+        intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,
             ComponentName(adminComponentNameParts[0], adminComponentNameParts[1]))
         intent.putExtra(EXTRA_PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM, packageChecksum)
         if (systemAppsEnabled) {

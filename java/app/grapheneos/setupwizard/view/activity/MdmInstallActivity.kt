@@ -11,13 +11,13 @@ import app.grapheneos.setupwizard.action.MdmInstallActions
 import app.grapheneos.setupwizard.data.MdmInstallData
 
 class MdmInstallActivity : SetupWizardActivity(
-    R.layout.activity_provisioning,
+    R.layout.activity_mdm_install,
     R.drawable.baseline_provisioning_glif,
     R.string.provisioning_title,
     R.string.provisioning_desc,
 ) {
     companion object {
-        private const val TAG = "ProvisioningActivity"
+        private const val TAG = "MdmInstallActivity"
     }
 
     private lateinit var spinner: ProgressBar

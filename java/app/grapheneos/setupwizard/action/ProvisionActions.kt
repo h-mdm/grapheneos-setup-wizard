@@ -5,6 +5,7 @@ import android.app.admin.DevicePolicyManager.EXTRA_PROVISIONING_TRIGGER
 import android.app.Activity
 import android.app.admin.DevicePolicyManager
 import android.content.Intent
+import android.os.Parcelable
 import android.util.Log
 import android.provider.Settings
 
@@ -27,7 +28,7 @@ object ProvisionActions {
         provisionIntent.putExtra(EXTRA_PROVISIONING_TRIGGER, PROVISIONING_TRIGGER_QR_CODE)
         provisionIntent.putExtra(
             DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME,
-            context.intent.getStringExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME)
+            context.intent.getParcelableExtra(DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_COMPONENT_NAME)
         )
         provisionIntent.putExtra(
             DevicePolicyManager.EXTRA_PROVISIONING_DEVICE_ADMIN_SIGNATURE_CHECKSUM,
@@ -41,7 +42,7 @@ object ProvisionActions {
         if (skipEncryption) {
             provisionIntent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_SKIP_ENCRYPTION, true)
         }
-        val extrasBundle = context.intent.getBundleExtra(DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE)
+        val extrasBundle: Parcelable? = context.intent.getParcelableExtra(DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE)
         if (extrasBundle != null) {
             provisionIntent.putExtra(DevicePolicyManager.EXTRA_PROVISIONING_ADMIN_EXTRAS_BUNDLE, extrasBundle)
         }
