@@ -42,7 +42,7 @@ class MdmInstallActivity : SetupWizardActivity(
 
     override fun onActivityResult(resultCode: Int, data: Intent?) {
         super.onActivityResult(resultCode, data)
-        MdmInstallActions.handleActivityResult(this, resultCode, data)
+        MdmInstallActions.handleActivityResult(this, resultCode)
     }
 
     override fun bindViews() {

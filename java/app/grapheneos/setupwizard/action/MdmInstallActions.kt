@@ -362,7 +362,7 @@ object MdmInstallActions {
         return bundle
     }
 
-    fun handleActivityResult(activity: Activity, resultCode: Int, data: Intent?) {
+    fun handleActivityResult(activity: Activity, resultCode: Int) {
         if (resultCode == Activity.RESULT_CANCELED) {
             handleError(activity, activity.getString(R.string.wifi_failed))
         } else {

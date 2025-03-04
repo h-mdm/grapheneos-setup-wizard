@@ -15,7 +15,7 @@ class ConsecutiveTapsGestureDetector(
     private var mPreviousTapEvent: MotionEvent? = null
 
     interface OnConsecutiveTapsListener {
-        fun onConsecutiveTaps(i: Int)
+        fun onConsecutiveTaps(welcomeTapCounter: Int)
     }
 
     init {

@@ -14,7 +14,7 @@ class ProvisionActivity : Activity() {
         ProvisionActions.provisionDeviceOwner(this)
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent) {
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         Log.d(
             TAG, "onActivityResult(): request=" + requestCode + ", result="
                     + ProvisionActions.resultCodeToString(resultCode) + ", data=" + data

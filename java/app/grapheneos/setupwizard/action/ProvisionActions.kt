@@ -117,10 +117,10 @@ object ProvisionActions {
             .setMessage("Device owner provisioning failed (" + reason
                         + ") and device must be factory reset"
             )
-            .setPositiveButton(context.getString(R.string.button_reset)) { d: DialogInterface?, w: Int ->
+            .setPositiveButton(context.getString(R.string.button_reset)) { _: DialogInterface?, _: Int ->
                 sendFactoryResetIntent(context, reason)
             }
-            .setOnDismissListener { d: DialogInterface? ->
+            .setOnDismissListener { _: DialogInterface? ->
                 sendFactoryResetIntent(context, reason)
             }
             .show()
