@@ -14,9 +14,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageInstaller
 import android.content.pm.PackageManager
-import android.net.wifi.WifiConfiguration
 import android.os.PersistableBundle
-import android.text.TextUtils
 import android.util.Base64
 import androidx.appcompat.app.AlertDialog
 import app.grapheneos.setupwizard.R
@@ -33,8 +31,6 @@ import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
 import java.util.concurrent.Executors
-import android.net.wifi.WifiManager
-import android.util.Log
 
 
 object MdmInstallActions {
@@ -47,9 +43,6 @@ object MdmInstallActions {
     private const val EXTRA_SKIP_ENCRYPTION = "android.app.extra.PROVISIONING_SKIP_ENCRYPTION"
     private const val EXTRA_SYSTEM_APPS_ENABLED = "android.app.extra.PROVISIONING_LEAVE_ALL_SYSTEM_APPS_ENABLED"
     private const val EXTRA_EXTRAS_BUNDLE = "android.app.extra.PROVISIONING_ADMIN_EXTRAS_BUNDLE"
-    private const val EXTRA_WIFI_SSID = "android.app.extra.PROVISIONING_WIFI_SSID"
-    private const val EXTRA_WIFI_PASSWORD = "android.app.extra.PROVISIONING_WIFI_PASSWORD"
-    private const val EXTRA_WIFI_SECURITY_TYPE = "android.app.extra.PROVISIONING_WIFI_SECURITY_TYPE"
 
     private var adminComponentName: String? = null
     private var downloadLocation: String? = null
@@ -57,9 +50,6 @@ object MdmInstallActions {
     private var skipEncryption: Boolean = false
     private var systemAppsEnabled: Boolean = false
     private var extrasBundle: PersistableBundle? = null
-    private var wifiSsid: String? = null
-    private var wifiPassword: String? = null
-    private var wifiSecurityType: String? = null
 
     private val executor = Executors.newSingleThreadExecutor()
     private const val CONNECTION_TIMEOUT_MS = 10000;
@@ -139,110 +129,25 @@ object MdmInstallActions {
             extrasBundle = jsonToPersistableBundle(jsonNode[EXTRA_EXTRAS_BUNDLE])
         }
 
-        if (jsonNode.has(EXTRA_WIFI_SSID) && jsonNode[EXTRA_WIFI_SSID].isTextual) {
-            wifiSsid = jsonNode[EXTRA_WIFI_SSID].asText()
-        }
-
-        if (jsonNode.has(EXTRA_WIFI_PASSWORD) && jsonNode[EXTRA_WIFI_PASSWORD].isTextual) {
-            wifiPassword = jsonNode[EXTRA_WIFI_PASSWORD].asText()
-        }
-
-        if (jsonNode.has(EXTRA_WIFI_SECURITY_TYPE) && jsonNode[EXTRA_WIFI_SECURITY_TYPE].isTextual) {
-            wifiSecurityType = jsonNode[EXTRA_WIFI_SECURITY_TYPE].asText()
-        }
-
         return true
     }
 
+    /**
+     * There is an option to set the WiFi parameters (PROVISIONING_WIFI_SSID, PROVISIONING_WIFI_PASSWORD,
+     * PROVISIONING_WIFI_SECURITY_TYPE, etc) in the QR code, which requires SetupWizard to set up
+     * WiFi automatically. Unfortunately the automatic WiFi configuration doesn't work because it
+     * requires elevated permissions, either Device / Profile owner, or a system user (android.uid.system).
+     *
+     * Another approach to treat WiFi and other provisioning parameters could be to send all them directly
+     * to DevicePolicyManager immediately after scanning a QR code. However if they're sent in
+     * REQUEST_CODE_STEP1, WiFi connection is not established. There could be another request code
+     * which should be sent to set up WiFi (like pre-provisioning), this needs to be investigated.
+     *
+     * By now, only manual setup of the WiFi connection is supported.
+     *
+     */
     private fun setupWiFi(context: Activity) {
-        if (wifiSsid == null) {
-            setupWiFiManual(context)
-        } else {
-            setupWiFiAutomatic(context)
-        }
-    }
-
-    private fun setupWiFiManual(context: Activity) {
         WifiActions.launchSetup(context as SetupWizardActivity)
-    }
-
-    @Suppress("deprecation")
-    private fun setupWiFiAutomatic(context: Activity) {
-        MdmInstallData.spinnerVisible.postValue(true)
-        MdmInstallData.message.postValue(context.getString(R.string.setting_up_wifi))
-        executor.execute {
-            setupWiFiAutomaticSync(context)
-        }
-    }
-
-    @Suppress("deprecation")
-    private fun setupWiFiAutomaticSync(context: Activity) {
-        val wifiManager = context.getSystemService(WifiManager::class.java)
-        if (wifiManager == null) {
-            Log.e(TAG, "Failed to retrieve the WifiManager service")
-            MdmInstallData.error.postValue(context.getString(R.string.wifi_failed))
-            return
-        }
-
-        val wifiConfiguration = WifiConfiguration()
-        wifiConfiguration.SSID = "\"" + wifiSsid + "\"";
-
-        // packages/apps/Settings/src/com/android/settings/wifi/WifiConfigController2.java
-        when(wifiSecurityType) {
-            "NONE" -> {
-                wifiConfiguration.setSecurityParams(WifiConfiguration.SECURITY_TYPE_OPEN);
-            }
-            "WPA" -> {
-                wifiConfiguration.setSecurityParams(WifiConfiguration.SECURITY_TYPE_PSK)
-                if (!TextUtils.isEmpty(wifiPassword)) {
-                    if (wifiPassword?.matches("[0-9A-Fa-f]{64}".toRegex()) == true) {
-                        wifiConfiguration.preSharedKey = wifiPassword
-                    } else {
-                        wifiConfiguration.preSharedKey = "\"" + wifiPassword + "\""
-                    }
-                }
-            }
-            "EAP" -> {
-                wifiConfiguration.setSecurityParams(WifiConfiguration.SECURITY_TYPE_EAP);
-                if (!TextUtils.isEmpty(wifiPassword)) {
-                    wifiConfiguration.preSharedKey = "\"" + wifiPassword + "\""
-                }
-            }
-            "WEP" -> {
-                wifiConfiguration.setSecurityParams(WifiConfiguration.SECURITY_TYPE_WEP)
-                if (!TextUtils.isEmpty(wifiPassword)) {
-                    val length: Int = wifiPassword!!.length
-                    // WEP-40, WEP-104, and 256-bit WEP (WEP-232?)
-                    if ((length == 10 || length == 26 || length == 58)
-                        && wifiPassword?.matches("[0-9A-Fa-f]*".toRegex()) == true
-                    ) {
-                        wifiConfiguration.wepKeys[0] = wifiPassword
-                    } else {
-                        wifiConfiguration.wepKeys[0] = "\"" + wifiPassword + "\""
-                    }
-                }
-
-            }
-            else -> {
-                MdmInstallData.error.postValue("Unsupported WiFi security type: " + wifiSecurityType)
-                return
-            }
-        }
-
-        // packages/apps/Settings/src/com/android/settings/network/NetworkProviderSettings.java
-        wifiManager.connect(wifiConfiguration, object: WifiManager.ActionListener {
-            override fun onSuccess() {
-                MdmInstallData.spinnerVisible.postValue(false)
-                onWifiSetupComplete(context)
-            }
-
-            override fun onFailure(reason: Int) {
-                MdmInstallData.spinnerVisible.postValue(false)
-                Log.e(TAG, "Failed to set up WiFi: " + reason)
-                MdmInstallData.error.postValue(context.getString(R.string.wifi_failed))
-                return
-            }
-        })
     }
 
     private fun onWifiSetupComplete(context: Activity) {
