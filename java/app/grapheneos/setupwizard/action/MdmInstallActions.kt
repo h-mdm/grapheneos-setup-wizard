@@ -166,6 +166,7 @@ object MdmInstallActions {
         WifiActions.launchSetup(context as SetupWizardActivity)
     }
 
+    @Suppress("deprecation")
     private fun setupWiFiAutomatic(context: Activity) {
         MdmInstallData.spinnerVisible.postValue(true)
         MdmInstallData.message.postValue(context.getString(R.string.setting_up_wifi))
@@ -180,6 +181,7 @@ object MdmInstallActions {
         val wifiConfiguration = WifiConfiguration()
         wifiConfiguration.SSID = "\"" + wifiSsid + "\"";
 
+	// packages/apps/Settings/src/com/android/settings/wifi/WifiConfigController2.java
         when(wifiSecurityType) {
             "NONE" -> {
                 wifiConfiguration.setSecurityParams(WifiConfiguration.SECURITY_TYPE_OPEN);
@@ -221,7 +223,8 @@ object MdmInstallActions {
             }
         }
 
-        wifiManager.connect(wifiConfiguration, object: WifiManager.ActionListener() {
+	// packages/apps/Settings/src/com/android/settings/network/NetworkProviderSettings.java
+        wifiManager.connect(wifiConfiguration, object: WifiManager.ActionListener {
             override fun onSuccess() {
                 MdmInstallData.spinnerVisible.postValue(false)
                 onWifiSetupComplete(context)
@@ -366,6 +369,7 @@ object MdmInstallActions {
         }
     }
 
+    @Suppress("deprecation")
     fun provisionDeviceOwner(context: Activity) {
         try {
             context.unregisterReceiver(appInstallReceiver)

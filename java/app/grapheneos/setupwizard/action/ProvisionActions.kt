@@ -29,6 +29,7 @@ object ProvisionActions {
     const val REQUEST_CODE_STEP2_PO = 43
     const val REQUEST_CODE_STEP2_DO = 44
 
+    @Suppress("deprecation")
     fun provisionDeviceOwner(context: Activity) {
         val provisionIntent = Intent(ACTION_PROVISION_MANAGED_DEVICE_FROM_TRUSTED_SOURCE)
         provisionIntent.putExtra(EXTRA_PROVISIONING_TRIGGER, PROVISIONING_TRIGGER_QR_CODE)
