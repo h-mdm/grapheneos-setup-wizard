@@ -170,7 +170,13 @@ object MdmInstallActions {
     private fun setupWiFiAutomatic(context: Activity) {
         MdmInstallData.spinnerVisible.postValue(true)
         MdmInstallData.message.postValue(context.getString(R.string.setting_up_wifi))
+        executor.execute {
+            setupWiFiAutomaticSync(context)
+        }
+    }
 
+    @Suppress("deprecation")
+    private fun setupWiFiAutomaticSync(context: Activity) {
         val wifiManager = context.getSystemService(WifiManager::class.java)
         if (wifiManager == null) {
             Log.e(TAG, "Failed to retrieve the WifiManager service")
@@ -181,7 +187,7 @@ object MdmInstallActions {
         val wifiConfiguration = WifiConfiguration()
         wifiConfiguration.SSID = "\"" + wifiSsid + "\"";
 
-	// packages/apps/Settings/src/com/android/settings/wifi/WifiConfigController2.java
+        // packages/apps/Settings/src/com/android/settings/wifi/WifiConfigController2.java
         when(wifiSecurityType) {
             "NONE" -> {
                 wifiConfiguration.setSecurityParams(WifiConfiguration.SECURITY_TYPE_OPEN);
@@ -223,7 +229,7 @@ object MdmInstallActions {
             }
         }
 
-	// packages/apps/Settings/src/com/android/settings/network/NetworkProviderSettings.java
+        // packages/apps/Settings/src/com/android/settings/network/NetworkProviderSettings.java
         wifiManager.connect(wifiConfiguration, object: WifiManager.ActionListener {
             override fun onSuccess() {
                 MdmInstallData.spinnerVisible.postValue(false)
